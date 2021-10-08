@@ -23,11 +23,13 @@ public class VendingMachineCLI {
 		this.menu = menu;
 	}
 
-	public void run() {
 
+
+	public void run() {
 		List<Item> currentStock = restockList();
 
 		while (true) {
+
 
 			String choice = (String) menu.getChoiceFromOptions(MAIN_MENU_OPTIONS);
 
@@ -78,6 +80,7 @@ public class VendingMachineCLI {
 		public static void purchaseItem(List<Item> itemList) {
 			Scanner userInput = new Scanner(System.in);
 			int option = 0;
+			BigDecimal totalDollars = new BigDecimal(0);
 			try {
 				while (option >= 0 && option <= 2) {
 
@@ -99,7 +102,7 @@ public class VendingMachineCLI {
 						return;
 					} else if (option == 1) {
 						boolean moreMoney = true;
-						BigDecimal totalDollars = new BigDecimal(0);
+
 						while (moreMoney) {
 							System.out.println("Please enter money in whole dollar amounts");
 							BigDecimal dollars = new BigDecimal(userInput.nextInt());
@@ -128,8 +131,32 @@ public class VendingMachineCLI {
 						System.out.println("Please enter quantity of item: ");
 						int quantity = userInput.nextInt();
 						for (Item item: itemList) {
+							BigDecimal shoppingCart = item.getPrice();
+							BigDecimal quantityConverted = new BigDecimal(quantity);
+							shoppingCart.multiply(quantityConverted);
 							if ((item.getCode().equals(codeSelection))){
-								item.setCount(quantity);
+								if (item.getCount() == 0){
+									System.out.println("SOLD OUT");
+								} else {
+									if ((shoppingCart.compareTo(totalDollars) == 0) || (shoppingCart.compareTo(totalDollars) == -1)) {
+										if (quantity <= item.getCount()) {
+											item.setCount(quantity);
+											if (item.getType().equals("Chip")) {
+												System.out.println("Vending item! Crunch, Crunch, Yum!");
+											} else if (item.getType().equals("Candy")) {
+												System.out.println("Vending item! Munch, Munch, Yum!");
+											} else if (item.getType().equals("Drink")) {
+												System.out.println("Vending item! Glug, Glug, Yum!");
+											} else {
+												System.out.println("Vending item! Chew, Chew, Yum!");
+											}
+										} else {
+											System.out.println("Sorry, item stock insufficient.");
+										}
+									} else {
+										System.out.println("Sorry, not enough money available.");
+									}
+								}
 							}
 						}
 					}
