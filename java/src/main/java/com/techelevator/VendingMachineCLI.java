@@ -4,8 +4,11 @@ import com.techelevator.view.Menu;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -22,11 +25,11 @@ public class VendingMachineCLI {
 	public VendingMachineCLI(Menu menu) {
 		this.menu = menu;
 	}
+
 	static BigDecimal balance = new BigDecimal(0);
 	static List<Item> currentStock = restockList();
 
 	public void run() {
-
 
 
 		while (true) {
@@ -78,104 +81,126 @@ public class VendingMachineCLI {
 
 		}
 	}
-		public static BigDecimal purchaseItem(List<Item> itemList) {
-			Scanner userInput = new Scanner(System.in);
-			int option = 0;
-			BigDecimal totalDollars = balance;
-			BigDecimal shoppingCart = new BigDecimal(0);
-			try {
-				while (option >= 0 && option <= 2) {
 
-					System.out.println("---------------------------");
-					System.out.println("Press: ");
-					System.out.println("0 to return to main menu");
-					System.out.println("1 to feed money");
-					System.out.println("2 to make selection");
-					System.out.println("3 to finish transaction");
-					System.out.println("---------------------------");
+	public static void purchaseItem(List<Item> itemList) {
+		Scanner userInput = new Scanner(System.in);
+		int option = 0;
+		BigDecimal shoppingCart = new BigDecimal(0);
+
+		try {
+			while (option >= 0 && option <= 4) {
+				System.out.println(balance);
+				System.out.println("---------------------------");
+				System.out.println("Press: ");
+				System.out.println("0 to return to main menu");
+				System.out.println("1 to feed money");
+				System.out.println("2 to make selection");
+				System.out.println("3 to finish transaction");
+				System.out.println("---------------------------");
+				option = userInput.nextInt();
+				while (option < 0 || option > 4) {
+					System.out.println("invalid input, try again");
 					option = userInput.nextInt();
-						while (option < 0 || option > 2) {
-							System.out.println("invalid input, try again");
-							option = userInput.nextInt();
-						}
+				}
 
-					if (option == 0) {
-						return totalDollars;
-					} else if (option == 1) {
-						boolean moreMoney = true;
+				if (option == 0) {
+				} else if (option == 1) {
+					boolean moreMoney = true;
+					//BigDecimal totalDollars = balance;
+					while (moreMoney) {
+						System.out.println("Please enter money in whole dollar amounts");
+						BigDecimal dollars = new BigDecimal(userInput.nextInt());
+						userInput.nextLine();
 
-						while (moreMoney) {
-							System.out.println("Please enter money in whole dollar amounts");
-							BigDecimal dollars = new BigDecimal(userInput.nextInt());
-							userInput.nextLine();
-							totalDollars = totalDollars.add(dollars);
-							System.out.println("current money provided: " + totalDollars);
-							boolean isValid = false;
-							while (isValid == false) {
-								System.out.println("Do you have more bills?");
-								String answer = userInput.nextLine().toLowerCase();
-								if (answer.equals("n")) {
-									moreMoney = false;
-									isValid = true;
-								} else if (answer.equals("y")) {
-									moreMoney = true;
-									isValid = true;
-								} else {
-									System.out.println("invalid input, try again");
-								}
+						balance = balance.add(dollars);
+						System.out.println("current money provided: " + balance);
+						boolean isValid = false;
+						while (isValid == false) {
+							System.out.println("Do you have more bills?");
+							String answer = userInput.nextLine().toLowerCase();
+							if (answer.equals("n")) {
+								moreMoney = false;
+								isValid = true;
+							} else if (answer.equals("y")) {
+								moreMoney = true;
+								isValid = true;
+							} else {
+								System.out.println("invalid input, try again");
 							}
 						}
-					} else if (option == 2) {
-						displayVendingMachineItems(currentStock);
-						userInput.nextLine();
-						System.out.println("Please enter code of item: ");
-						String codeSelection = userInput.nextLine().toUpperCase();
-						System.out.println("Please enter quantity of item: ");
-						int quantity = userInput.nextInt();
-						for (Item item: itemList) {
-							shoppingCart = item.getPrice();
-							BigDecimal quantityConverted = new BigDecimal(quantity);
-							shoppingCart.multiply(quantityConverted);
-							if ((item.getCode().equals(codeSelection))){
-								if (item.getCount() == 0){
-									System.out.println("SOLD OUT");
-								} else {
-									if ((shoppingCart.compareTo(totalDollars) == 0) || (shoppingCart.compareTo(totalDollars) == -1)) {
-										if (quantity <= item.getCount()) {
-											item.setCount(quantity);
-											if (item.getType().equals("Chip")) {
-												System.out.println("Vending item! Crunch, Crunch, Yum!");
-											} else if (item.getType().equals("Candy")) {
-												System.out.println("Vending item! Munch, Munch, Yum!");
-											} else if (item.getType().equals("Drink")) {
-												System.out.println("Vending item! Glug, Glug, Yum!");
-											} else {
-												System.out.println("Vending item! Chew, Chew, Yum!");
-											}
+					}
+				} else if (option == 2) {
+					displayVendingMachineItems(currentStock);
+					userInput.nextLine();
+					System.out.println("Please enter code of item: ");
+					String codeSelection = userInput.nextLine().toUpperCase();
+					System.out.println("Please enter quantity of item: ");
+					int quantity = userInput.nextInt();
+					for (Item item : itemList) {
+						shoppingCart = item.getPrice();
+						BigDecimal quantityConverted = new BigDecimal(quantity);
+						shoppingCart = shoppingCart.multiply(quantityConverted);
+						if ((item.getCode().equals(codeSelection))) {
+							if (item.getCount() == 0) {
+								System.out.println("SOLD OUT");
+							} else {
+								if ((shoppingCart.compareTo(balance) == 0) || (shoppingCart.compareTo(balance) == -1)) {
+									if (quantity <= item.getCount()) {
+										item.setCount(quantity);
+										if (item.getType().equals("Chip")) {
+											balance = balance.subtract(item.getPrice());
+											System.out.println("Vending item! Crunch, Crunch, Yum!");
+										} else if (item.getType().equals("Candy")) {
+											balance = balance.subtract(item.getPrice());
+											System.out.println("Vending item! Munch, Munch, Yum!");
+										} else if (item.getType().equals("Drink")) {
+											balance = balance.subtract(item.getPrice());
+											System.out.println("Vending item! Glug, Glug, Yum!");
 										} else {
-											System.out.println("Sorry, item stock insufficient.");
+											balance = balance.subtract(item.getPrice());
+											System.out.println("Vending item! Chew, Chew, Yum!");
 										}
 									} else {
-										System.out.println("Sorry, not enough money available.");
+										System.out.println("Sorry, item stock insufficient.");
 									}
+								} else {
+									System.out.println("Sorry, not enough money available.");
 								}
 							}
 						}
-					} else if (option == 3) {
-						BigDecimal change = (balance.subtract(shoppingCart));
-						//double changeUp = Math.ceil(change.doubleValue());
-						//while (change != 0)
-						//if (change.remainder(.25)) {
+					}
+				} else if (option == 3) {
 
-						//}
+					int quartersReturned = (balance.divide(new BigDecimal(.25)).intValue());
+					BigDecimal change = balance.subtract(new BigDecimal(quartersReturned * .25));
+					int dimesReturned = 0;
+					if (change.compareTo(new BigDecimal(.10)) >= 0) {
+						dimesReturned = (change.divide(new BigDecimal(.10)).intValue());
+					}
 
+					change = change.subtract(new BigDecimal(dimesReturned * .10));
+					int nickelsReturned = 0;
+					if (change.compareTo(BigDecimal.ZERO) > 0) {
+						nickelsReturned++;
+					}
+					System.out.println("quarters: " + quartersReturned);
+					System.out.println("dimes: " + dimesReturned);
+					System.out.println("nickels: " + nickelsReturned);
+					balance = BigDecimal.ZERO;
+				} else if (option == 4) {
+					Date log = new Date();
+					String dataFile = "Log.txt";
+					try (PrintWriter dataOutput = new PrintWriter(new FileOutputStream(dataFile, true))) {
+						dataOutput.println(log);
+					} catch (FileNotFoundException e) {
+						System.out.println("file not found");
 					}
 				}
-			} catch (InputMismatchException e){
-				System.out.println("You didn't enter a number");
 			}
-			return totalDollars;
 
+		}catch(InputMismatchException e){
+			System.out.println("You didn't enter a number");
 		}
 	}
+}
 
