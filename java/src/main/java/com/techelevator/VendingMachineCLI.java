@@ -22,11 +22,12 @@ public class VendingMachineCLI {
 	public VendingMachineCLI(Menu menu) {
 		this.menu = menu;
 	}
-
-
+	static BigDecimal balance = new BigDecimal(0);
+	static List<Item> currentStock = restockList();
 
 	public void run() {
-		List<Item> currentStock = restockList();
+
+
 
 		while (true) {
 
@@ -77,10 +78,11 @@ public class VendingMachineCLI {
 
 		}
 	}
-		public static void purchaseItem(List<Item> itemList) {
+		public static BigDecimal purchaseItem(List<Item> itemList) {
 			Scanner userInput = new Scanner(System.in);
 			int option = 0;
-			BigDecimal totalDollars = new BigDecimal(0);
+			BigDecimal totalDollars = balance;
+			BigDecimal shoppingCart = new BigDecimal(0);
 			try {
 				while (option >= 0 && option <= 2) {
 
@@ -89,17 +91,16 @@ public class VendingMachineCLI {
 					System.out.println("0 to return to main menu");
 					System.out.println("1 to feed money");
 					System.out.println("2 to make selection");
+					System.out.println("3 to finish transaction");
 					System.out.println("---------------------------");
 					option = userInput.nextInt();
-					//if (option < 0 || option > 2) {
 						while (option < 0 || option > 2) {
 							System.out.println("invalid input, try again");
 							option = userInput.nextInt();
 						}
-					//}
 
 					if (option == 0) {
-						return;
+						return totalDollars;
 					} else if (option == 1) {
 						boolean moreMoney = true;
 
@@ -125,13 +126,14 @@ public class VendingMachineCLI {
 							}
 						}
 					} else if (option == 2) {
+						displayVendingMachineItems(currentStock);
 						userInput.nextLine();
 						System.out.println("Please enter code of item: ");
 						String codeSelection = userInput.nextLine().toUpperCase();
 						System.out.println("Please enter quantity of item: ");
 						int quantity = userInput.nextInt();
 						for (Item item: itemList) {
-							BigDecimal shoppingCart = item.getPrice();
+							shoppingCart = item.getPrice();
 							BigDecimal quantityConverted = new BigDecimal(quantity);
 							shoppingCart.multiply(quantityConverted);
 							if ((item.getCode().equals(codeSelection))){
@@ -159,12 +161,20 @@ public class VendingMachineCLI {
 								}
 							}
 						}
+					} else if (option == 3) {
+						BigDecimal change = (balance.subtract(shoppingCart));
+						//double changeUp = Math.ceil(change.doubleValue());
+						//while (change != 0)
+						//if (change.remainder(.25)) {
+
+						//}
+
 					}
 				}
 			} catch (InputMismatchException e){
 				System.out.println("You didn't enter a number");
 			}
-
+			return totalDollars;
 
 		}
 	}
