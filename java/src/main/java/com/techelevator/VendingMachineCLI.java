@@ -1,5 +1,7 @@
 package com.techelevator;
 
+import com.techelevator.view.AuditInformation;
+
 import com.techelevator.view.Menu;
 
 import java.io.File;
@@ -7,11 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.InputMismatchException;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class VendingMachineCLI {
@@ -88,7 +86,7 @@ public class VendingMachineCLI {
 		BigDecimal shoppingCart = new BigDecimal(0);
 
 		try {
-			while (option >= 0 && option <= 4) {
+			while (option >= 0 && option <= 3) {
 				System.out.println(balance);
 				System.out.println("---------------------------");
 				System.out.println("Press: ");
@@ -98,7 +96,7 @@ public class VendingMachineCLI {
 				System.out.println("3 to finish transaction");
 				System.out.println("---------------------------");
 				option = userInput.nextInt();
-				while (option < 0 || option > 4) {
+				while (option < 0 || option > 3) {
 					System.out.println("invalid input, try again");
 					option = userInput.nextInt();
 				}
@@ -114,6 +112,7 @@ public class VendingMachineCLI {
 
 						balance = balance.add(dollars);
 						System.out.println("current money provided: " + balance);
+						AuditInformation.getTransactionDateTimeStamp("Feed Money: $" + dollars + " " + "$" +balance);
 						boolean isValid = false;
 						while (isValid == false) {
 							System.out.println("Do you have more bills?");
@@ -148,17 +147,21 @@ public class VendingMachineCLI {
 									if (quantity <= item.getCount()) {
 										item.setCount(quantity);
 										if (item.getType().equals("Chip")) {
-											balance = balance.subtract(item.getPrice());
+											balance = balance.subtract(shoppingCart);
 											System.out.println("Vending item! Crunch, Crunch, Yum!");
+											AuditInformation.getTransactionDateTimeStamp(item.getName() + " " + item.getCode() + " " + "$" + balance.add(shoppingCart) + " " + "$" +balance);
 										} else if (item.getType().equals("Candy")) {
-											balance = balance.subtract(item.getPrice());
+											balance = balance.subtract(shoppingCart);
 											System.out.println("Vending item! Munch, Munch, Yum!");
+											AuditInformation.getTransactionDateTimeStamp(item.getName() + " " + item.getCode() + " " + "$" + balance.add(shoppingCart) + " " + "$" +balance);
 										} else if (item.getType().equals("Drink")) {
-											balance = balance.subtract(item.getPrice());
+											balance = balance.subtract(shoppingCart);
 											System.out.println("Vending item! Glug, Glug, Yum!");
+											AuditInformation.getTransactionDateTimeStamp(item.getName() + " " + item.getCode() + " " + "$" + balance.add(shoppingCart) + " " + "$" +balance);
 										} else {
-											balance = balance.subtract(item.getPrice());
+											balance = balance.subtract(shoppingCart);
 											System.out.println("Vending item! Chew, Chew, Yum!");
+											AuditInformation.getTransactionDateTimeStamp(item.getName() + " " + item.getCode() + " " + "$" + balance.add(shoppingCart) + " " + "$" +balance);
 										}
 									} else {
 										System.out.println("Sorry, item stock insufficient.");
@@ -174,6 +177,7 @@ public class VendingMachineCLI {
 					int quartersReturned = (balance.divide(new BigDecimal(.25)).intValue());
 					BigDecimal change = balance.subtract(new BigDecimal(quartersReturned * .25));
 					int dimesReturned = 0;
+					AuditInformation.getTransactionDateTimeStamp("Give Change: " + "$" + balance + " " + "$0.00");
 					if (change.compareTo(new BigDecimal(.10)) >= 0) {
 						dimesReturned = (change.divide(new BigDecimal(.10)).intValue());
 					}
@@ -187,18 +191,10 @@ public class VendingMachineCLI {
 					System.out.println("dimes: " + dimesReturned);
 					System.out.println("nickels: " + nickelsReturned);
 					balance = BigDecimal.ZERO;
-				} else if (option == 4) {
-					Date log = new Date();
-					String dataFile = "Log.txt";
-					try (PrintWriter dataOutput = new PrintWriter(new FileOutputStream(dataFile, true))) {
-						dataOutput.println(log);
-					} catch (FileNotFoundException e) {
-						System.out.println("file not found");
-					}
 				}
 			}
 
-		}catch(InputMismatchException e){
+		} catch(InputMismatchException e){
 			System.out.println("You didn't enter a number");
 		}
 	}
