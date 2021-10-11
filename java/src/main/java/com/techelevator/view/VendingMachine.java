@@ -112,8 +112,8 @@ public class VendingMachine {
         BigDecimal change = balance.subtract(new BigDecimal(quartersReturned * .25));
         int dimesReturned = 0;
         VendingMachine.getTransactionDateTimeStamp("Give Change: " + "$" + balance + " " + "$0.00");
-        if (change.compareTo(new BigDecimal(0.10)) >= 0) {
-            dimesReturned = (change.divide(new BigDecimal(.10)).intValue());
+        if (change.compareTo(new BigDecimal(0.09)) >= 0) {
+            dimesReturned = (change.divide(BigDecimal.valueOf(.10))).intValue();
         }
 
         change = change.subtract(new BigDecimal(dimesReturned * .10));
